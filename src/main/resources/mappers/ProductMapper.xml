@@ -176,4 +176,55 @@
       update_time = now()
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+<select id="selectLisst" resultMap="BaseResultMap">
+  SELECT
+  <include refid="Base_Column_List"/>
+  FROM mmall_product
+  ORDER BY id ASC
+
+</select>
+  <!--升序-->
+  <select id="selectByNameAndProductId" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM mmall_product
+    <where>
+      <if test="productName != null">
+        and name like #{productName}
+      </if>
+      <if test="productId != null">
+        and id = #{productId}
+      </if>
+    </where>
+
+
+
+    <!--/*这里自动把and替换为where*/-->
+     <!--等价-->
+    <!--WHERE 1=1
+    <if test="productName != null">
+       and name=like #{productName}
+    </if>
+    <if test="productId != null">
+      and id=like #{productId}
+    </if>-->
+  </select>
+  <!--通过name和category_id查询产品-->
+  <select id="selectByNameAndCategoryIds" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM mmall_product
+    WHERE status=1
+    <if test="productName!=null">
+      AND name LIKE #{productName}
+    </if>
+    <if test="categoryIdList!=null">
+      and category_id in
+      <foreach collection="categoryIdList" item="item" index="index" open="(" separator="," close=")">
+--         循环取出categoryIdList的值
+        #{item}
+      </foreach>
+    </if>
+  </select>
 </mapper>

@@ -31,8 +31,9 @@
       update_time)
     values (#{id,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{productId,jdbcType=INTEGER}, 
       #{quantity,jdbcType=INTEGER}, #{checked,jdbcType=INTEGER}, now(),
-      now())/*#{createTime,jdbcType=TIMESTAMP},#{updateTime,jdbcType=TIMESTAMP}*/
+      now())
   </insert>
+  <!--/*#{createTime,jdbcType=TIMESTAMP},#{updateTime,jdbcType=TIMESTAMP}*/-->
   <insert id="insertSelective" parameterType="com.mmall.pojo.Cart" >
     insert into mmall_cart
     <trim prefix="(" suffix=")" suffixOverrides="," >
@@ -116,4 +117,50 @@
       update_time = now()
     where id = #{id,jdbcType=INTEGER}
   </update>
+  <select id="selectCartByUserIdProductId" resultMap="BaseResultMap" parameterType="map">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM mmall_cart
+    WHERE user_id=#{userId}
+    and product_id=#{productId}
+
+  </select>
+  <select id="selectCartByUserId" resultMap="BaseResultMap" parameterType="int">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM mmall_cart
+    WHERE user_id=#{userId}
+  </select>
+  <select id="selectCartProductCheckedStatusByUserId" resultType="int" parameterType="int">
+    SELECT count(1)
+    FROM mmall_cart
+    WHERE checked=0
+    AND user_id=#{userId}
+  </select>
+<!--productId可能有多个,利用foreach一次从productIdList中去值并执行sql语句-->
+  <delete id="deleteByUserIdProductId" parameterType="map">
+    DELETE FROM mmall_cart
+    WHERE user_id=#{userId}
+    and product_id in
+    <foreach collection="productIdList" item="item" index="index" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </delete>
+  <update id="checkedOrUncheckedProduct" parameterType="map" >
+    UPDATE mmall_cart
+    SET checked=#{checked},
+    update_time=now()
+    where user_id=#{userId}
+    <if test="productId!=null">
+      and product_id=#{productId}
+    </if>
+  </update>
+
+  <select id="selectCartProductCount" resultType="int" parameterType="int">
+  <!--如果sum为空,取0-->
+    SELECT IFNULL(sum(quantity),0) AS count
+    FROM mmall_cart
+    where user_id=#{userId}
+  </select>
+
 </mapper>
